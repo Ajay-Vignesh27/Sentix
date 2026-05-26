@@ -1,0 +1,11 @@
+# System logs and task states
+.system_generated/
+*.log
+
+# Node dependencies and coverage reports
+node_modules/
+coverage/
+
+# OS specific files
+.DS_Store
+Thumbs.db

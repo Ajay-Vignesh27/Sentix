@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentix Automated Test Runner</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --bg-tertiary: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --color-green: #10b981;
+      --color-red: #ef4444;
+      --color-blue: #3b82f6;
+      --border-radius: 12px;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 32px 16px;
+      line-height: 1.5;
+    }
+    
+    .runner-wrap {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    header {
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--bg-tertiary);
+      padding-bottom: 16px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    h1 i { color: var(--color-blue); }
+    
+    .sub {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      padding: 16px;
+      border: 1px solid var(--bg-tertiary);
+    }
+    
+    .stat-lbl {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .stat-val {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    
+    /* Progress bar */
+    .progress-bar-wrap {
+      background: var(--bg-tertiary);
+      height: 8px;
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--color-blue), var(--color-green));
+      border-radius: 99px;
+      transition: width 0.15s ease-out;
+    }
+    
+    /* Actions */
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.2s;
+    }
+    
+    .btn:hover { opacity: 0.9; }
+    .btn-run { background: var(--color-blue); color: #fff; }
+    .btn-back { background: var(--bg-tertiary); color: #fff; }
+    
+    /* Tests Log */
+    .suite-card {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--bg-tertiary);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    
+    .suite-title {
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--bg-tertiary);
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .test-list {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .test-item {
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    
+    .test-item:last-child { border-bottom: none; }
+    
+    .test-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .test-name { font-weight: 500; }
+    
+    .test-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+    }
+    
+    .test-status i { font-size: 16px; }
+    .status-awaiting { color: var(--text-muted); }
+    .status-running { color: var(--color-blue); animation: spin 1s linear infinite; }
+    .status-passed { color: var(--color-green); }
+    .status-failed { color: var(--color-red); }
+    
+    .test-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    
+    .error-details {
+      display: none;
+      padding: 10px 20px;
+      background: rgba(239, 68, 68, 0.08);
+      border-top: 1px solid rgba(239, 68, 68, 0.2);
+      color: var(--color-red);
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Hidden Iframe for high fidelity UI testing */
+    #test-iframe {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      top: -100px;
+      left: -100px;
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="runner-wrap">
+    
+    <header>
+      <h1><i class="ti ti-heart-rate-monitor"></i> Sentix Test Suite Runner</h1>
+      <div class="sub">Visual Automated Browser Testing · Integration & Unit Tests</div>
+    </header>
+    
+    <div class="actions">
+      <button class="btn btn-run" onclick="runAllTests()"><i class="ti ti-player-play"></i> Run Test Suite</button>
+      <button class="btn btn-back" onclick="window.location.href='index.html'"><i class="ti ti-arrow-left"></i> Open Sentix App</button>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-lbl">Status</div>
+        <div class="stat-val" id="suite-status" style="color:var(--text-muted)">Ready</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Total</div>
+        <div class="stat-val" id="suite-total">10</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Passed</div>
+        <div class="stat-val" id="suite-passed" style="color:var(--color-green)">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Failed</div>
+        <div class="stat-val" id="suite-failed" style="color:var(--color-red)">0</div>
+      </div>
+    </div>
+    
+    <div class="progress-bar-wrap">
+      <div class="progress-fill" id="suite-progress"></div>
+    </div>
+    
+    <!-- Suite Group 1 -->
+    <div class="suite-card">
+      <div class="suite-title">
+        <span>Unit Tests — Lexicon Sentiment NLP Engine</span>
+        <span class="test-meta">sentiment.js</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item" id="test-1">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">Correctly identifies Positive sentiment sentences</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-1"></div>
+
+        <div class="test-item" id="test-2">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">Correctly identifies Negative sentiment sentences</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-2"></div>
+
+        <div class="test-item" id="test-3">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">Classifies neutral inputs without sentiment vocabulary</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-3"></div>
+
+        <div class="test-item" id="test-4">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">Negation logic flips emotional direction ("not terrible")</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-4"></div>
+      </div>
+    </div>
+
+    <!-- Suite Group 2 -->
+    <div class="suite-card">
+      <div class="suite-title">
+        <span>Integration Tests — App Controller & Router</span>
+        <span class="test-meta">app.js</span>
+      </div>
+      <div class="test-list">
+        <div class="test-item" id="test-5">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">Screen router updates classes & navigation links</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-5"></div>
+
+        <div class="test-item" id="test-6">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">Textarea updates detection metrics dynamically on input</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-6"></div>
+
+        <div class="test-item" id="test-7">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">Running analysis successfully populates statistics</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-7"></div>
+
+        <div class="test-item" id="test-8">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">Visual theme toggle matches class switches & localStorage</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-8"></div>
+
+        <div class="test-item" id="test-9">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">Manual sentiment modification overrides data metrics</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-9"></div>
+
+        <div class="test-item" id="test-10">
+          <div class="test-info">
+            <span class="test-status"><i class="ti ti-dots-horizontal status-awaiting"></i></span>
+            <span class="test-name">CSV parser handles double quotes & comma scopes</span>
+          </div>
+          <div class="test-meta">Awaiting</div>
+        </div>
+        <div class="error-details" id="err-10"></div>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- Mounting Sandbox Iframe -->
+  <iframe id="test-iframe" src="index.html"></iframe>
+
+  <script src="sentiment.js"></script>
+  <script>
+    let iframeWindow = null;
+    let iframeDocument = null;
+
+    // Load elements
+    const iframe = document.getElementById('test-iframe');
+
+    // Run suite on click
+    function runAllTests() {
+      // Clear stats
+      document.getElementById('suite-status').textContent = 'Running';
+      document.getElementById('suite-status').style.color = 'var(--color-blue)';
+      document.getElementById('suite-passed').textContent = '0';
+      document.getElementById('suite-failed').textContent = '0';
+      document.getElementById('suite-progress').style.width = '0%';
+
+      // Reset indicators
+      for (let i = 1; i <= 10; i++) {
+        const item = document.getElementById(`test-${i}`);
+        item.querySelector('.test-status').innerHTML = '<i class="ti ti-loader-2 status-running"></i>';
+        item.querySelector('.test-meta').textContent = 'Testing...';
+        document.getElementById(`err-${i}`).style.display = 'none';
+      }
+
+      // Reload iframe to guarantee clean state
+      iframe.src = 'index.html';
+      iframe.onload = async () => {
+        iframeWindow = iframe.contentWindow;
+        iframeDocument = iframe.contentDocument;
+        
+        // Mock LocalStorage in iframe
+        const mockStore = {};
+        Object.defineProperty(iframeWindow, 'localStorage', {
+          value: {
+            getItem: (key) => mockStore[key] || null,
+            setItem: (key, val) => { mockStore[key] = String(val); },
+            removeItem: (key) => { delete mockStore[key]; },
+            clear: () => { for (let k in mockStore) delete mockStore[k]; }
+          },
+          configurable: true
+        });
+
+        // Run assertions sequentially
+        let passed = 0;
+        let failed = 0;
+
+        const runTest = async (id, name, testFn) => {
+          const item = document.getElementById(`test-${id}`);
+          const meta = item.querySelector('.test-meta');
+          const status = item.querySelector('.test-status');
+          const errorLog = document.getElementById(`err-${id}`);
+          
+          const start = performance.now();
+          try {
+            await testFn();
+            const dur = (performance.now() - start).toFixed(1);
+            status.innerHTML = '<i class="ti ti-circle-check status-passed"></i>';
+            meta.textContent = `${dur}ms`;
+            passed++;
+            document.getElementById('suite-passed').textContent = passed;
+          } catch (e) {
+            status.innerHTML = '<i class="ti ti-circle-x status-failed"></i>';
+            meta.textContent = 'Failed';
+            errorLog.textContent = `${e.name}: ${e.message}\n${e.stack || ''}`;
+            errorLog.style.display = 'block';
+            failed++;
+            document.getElementById('suite-failed').textContent = failed;
+          }
+          
+          const pct = Math.round(((id) / 10) * 100);
+          document.getElementById('suite-progress').style.width = pct + '%';
+        };
+
+        // 1. Positive Polarity Check
+        await runTest(1, "Correctly identifies Positive sentiment sentences", () => {
+          const res = analyzeComment("Absolutely loved this product, it works perfectly and was super easy!");
+          if (res.sentiment !== 'Positive') throw new Error(`Expected Positive but got ${res.sentiment}`);
+          if (res.confidence < 80) throw new Error(`Confidence low: ${res.confidence}%`);
+          if (!res.matchedPositive.includes('love') && !res.matchedPositive.includes('perfect')) {
+            throw new Error(`Matched positive indicators empty: ${JSON.stringify(res.matchedPositive)}`);
+          }
+        });
+
+        // 2. Negative Polarity Check
+        await runTest(2, "Correctly identifies Negative sentiment sentences", () => {
+          const res = analyzeComment("I hate this app, it crashed and is horrible and buggy.");
+          if (res.sentiment !== 'Negative') throw new Error(`Expected Negative but got ${res.sentiment}`);
+          if (res.confidence < 80) throw new Error(`Confidence low: ${res.confidence}%`);
+          if (!res.matchedNegative.includes('hate') && !res.matchedNegative.includes('crash')) {
+            throw new Error(`Matched negative indicators empty: ${JSON.stringify(res.matchedNegative)}`);
+          }
+        });
+
+        // 3. Neutral Polarity Check
+        await runTest(3, "Classifies neutral inputs without sentiment vocabulary", () => {
+          const res = analyzeComment("the item is delivered today. it is black.");
+          if (res.sentiment !== 'Neutral') throw new Error(`Expected Neutral but got ${res.sentiment}`);
+          if (res.matchedPositive.length > 0 || res.matchedNegative.length > 0) {
+            throw new Error(`Neutral should have no keywords, but got pos: ${res.matchedPositive}, neg: ${res.matchedNegative}`);
+          }
+        });
+
+        // 4. Negation Check
+        await runTest(4, "Negation logic flips emotional direction", () => {
+          const res = analyzeComment("This dashboard layout is not bad.");
+          if (res.sentiment === 'Negative') throw new Error(`'not bad' should not be Negative`);
+          
+          const res2 = analyzeComment("The experience was not great.");
+          if (res2.sentiment === 'Positive') throw new Error(`'not great' should not be Positive`);
+        });
+
+        // 5. App routing UI check
+        await runTest(5, "Screen router updates classes & navigation links", () => {
+          iframeWindow.goScreen('input');
+          const screen = iframeDocument.getElementById('screen-input');
+          if (!screen.classList.contains('active')) throw new Error('Input screen did not get active class');
+          
+          const activeNav = iframeDocument.getElementById('nav-analyze');
+          if (!activeNav.classList.contains('active')) throw new Error('Analyze navigation link did not get active class');
+        });
+
+        // 6. Character/Line counter test
+        await runTest(6, "Textarea updates detection metrics dynamically on input", () => {
+          const ta = iframeDocument.getElementById('demoTextarea');
+          const cc = iframeDocument.getElementById('charCount');
+          
+          ta.value = "Review 1\nReview 2\nReview 3\nReview 4";
+          
+          // Dispatch input event
+          const event = iframeDocument.createEvent('Event');
+          event.initEvent('input', true, true);
+          ta.dispatchEvent(event);
+          
+          if (cc.textContent !== '4 comments detected') {
+            throw new Error(`Expected '4 comments detected' but got '${cc.textContent}'`);
+          }
+        });
+
+        // 7. Analysis stats test
+        await runTest(7, "Running analysis successfully populates statistics", () => {
+          const testText = "Perfect redesign!\nTerrible response time.\nIt is ok.";
+          iframeWindow.runAnalysisOnText(testText);
+          
+          if (iframeWindow.currentBatchData.length !== 3) {
+            throw new Error(`Expected 3 comments in currentBatchData, got ${iframeWindow.currentBatchData.length}`);
+          }
+          
+          const posCount = iframeWindow.currentBatchData.filter(d => d.sentiment === 'Positive').length;
+          const negCount = iframeWindow.currentBatchData.filter(d => d.sentiment === 'Negative').length;
+          
+          if (posCount !== 1) throw new Error(`Expected 1 positive sentiment, got ${posCount}`);
+          if (negCount !== 1) throw new Error(`Expected 1 negative sentiment, got ${negCount}`);
+        });
+
+        // 8. Theme toggle test
+        await runTest(8, "Visual theme toggle matches class switches & localStorage", () => {
+          // Initialize light mode
+          iframeWindow.localStorage.setItem('sentix_theme', 'light');
+          iframeWindow.initTheme();
+          
+          // Toggle
+          iframeWindow.toggleTheme();
+          
+          const hasDarkClass = iframeDocument.body.classList.contains('dark-theme');
+          if (!hasDarkClass) throw new Error("Body did not receive 'dark-theme' class on toggle");
+          
+          const saved = iframeWindow.localStorage.getItem('sentix_theme');
+          if (saved !== 'dark') throw new Error(`Theme in localStorage should be 'dark' but got '${saved}'`);
+        });
+
+        // 9. Manual Override test
+        await runTest(9, "Manual sentiment modification overrides data metrics", () => {
+          iframeWindow.runAnalysisOnText("This experience is ok.");
+          if (iframeWindow.currentBatchData[0].sentiment !== 'Neutral') {
+            throw new Error("Should start as Neutral");
+          }
+          
+          // Simulate clicking chevron row to open detail view
+          iframeWindow.openDetail(0);
+          
+          // Trigger manual override to Positive
+          iframeWindow.overrideSentiment('Positive');
+          
+          if (iframeWindow.currentBatchData[0].sentiment !== 'Positive') {
+            throw new Error(`Expected overridden sentiment to be Positive, got '${iframeWindow.currentBatchData[0].sentiment}'`);
+          }
+          if (iframeWindow.currentBatchData[0].confidence !== 100) {
+            throw new Error(`Overridden confidence should be 100%, got '${iframeWindow.currentBatchData[0].confidence}%'`);
+          }
+        });
+
+        // 10. CSV Parser test
+        await runTest(10, "CSV parser handles double quotes & comma scopes", () => {
+          const csvText = 'comment,rating\n"Simple positive comment, works smooth",5\n"Slow service, I\'ve been waiting weeks",1';
+          const comments = iframeWindow.parseCSVText(csvText);
+          
+          if (comments.length !== 2) throw new Error(`Expected 2 parsed lines, got ${comments.length}`);
+          if (comments[0] !== "Simple positive comment, works smooth") {
+            throw new Error(`Parsed row 1 was incorrect: "${comments[0]}"`);
+          }
+          if (comments[1] !== "Slow service, I've been waiting weeks") {
+            throw new Error(`Parsed row 2 was incorrect: "${comments[1]}"`);
+          }
+        });
+
+        // Finish suite
+        const isSuccess = failed === 0;
+        const statusEl = document.getElementById('suite-status');
+        statusEl.textContent = isSuccess ? 'Success' : 'Failed';
+        statusEl.style.color = isSuccess ? 'var(--color-green)' : 'var(--color-red)';
+      };
+    }
+  </script>
+</body>
+</html>
