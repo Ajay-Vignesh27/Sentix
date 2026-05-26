@@ -35,7 +35,7 @@ const SENTIMENT_LEXICON = {
 
 const NEGATION_WORDS = [
   'not', 'no', 'never', 'don\'t', 'dont', 'cannot', 'cant', 'can\'t',
-  'wasn't', 'wasnt', 'isn\'t', 'isnt', 'won\'t', 'wont', 'couldn\'t', 'couldnt',
+  'wasn\'t', 'wasnt', 'is\'n\'t', 'isnt', 'won\'t', 'wont', 'couldn\'t', 'couldnt',
   'wouldn\'t', 'wouldnt', 'shouldn\'t', 'shouldnt', 'haven\'t', 'havent',
   'hadn\'t', 'hadnt', 'neither', 'nor'
 ];
