@@ -182,6 +182,14 @@ function analyzeComment(commentText) {
   };
 }
 
+// Export globally for browser environment (handles Electron/VS Code preview module scopes)
+if (typeof window !== 'undefined') {
+  window.analyzeComment = analyzeComment;
+  window.tokenize = tokenize;
+  window.SENTIMENT_LEXICON = SENTIMENT_LEXICON;
+  window.NEGATION_WORDS = NEGATION_WORDS;
+}
+
 // Export for Node/Jest testing environment
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports = {
