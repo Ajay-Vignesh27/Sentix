@@ -919,7 +919,7 @@ function handleKeyboardShortcuts(event) {
 }
 
 // 13. DOM Bindings Setup
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
   // Theme Toggle Bind
   initTheme();
   const themeBtn = document.querySelector('.topnav .theme-btn');
@@ -1016,7 +1016,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Setup navigation
   goScreen('empty');
-});
+}
+
+// Safely execute initApp without DOMContentLoaded race condition
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 // Export for Node/Jest testing environment
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
