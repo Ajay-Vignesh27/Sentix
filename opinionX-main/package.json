@@ -1,0 +1,35 @@
+{
+  "name": "opinionX",
+  "version": "1.0.0",
+  "description": "Premium Sentiment Analyzer web application with automated QA suite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "jest --coverage"
+  },
+  "keywords": [
+    "sentiment",
+    "analyzer",
+    "nlp",
+    "chartjs"
+  ],
+  "author": "Antigravity",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov"
+    ]
+  }
+}

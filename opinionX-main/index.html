@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>opinionX — Premium AI Sentiment Analyzer Dashboard</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="opinionX is a premium, locally run AI sentiment analysis tool that converts user comments or CSV files into visual dashboard analytics, sentiment metrics, and downloadable reports.">
+  <meta name="keywords" content="sentiment analysis, customer feedback, nlp dashboard, text analytics, csv parser">
+  
+  <!-- Iconography & Stylesheet links -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Screen Reader Announcements (Accessibility) -->
+  <div id="sr-announcer" class="sr-only" aria-live="polite" role="status"></div>
+
+  <h1 class="sr-only">opinionX Sentiment Analysis Web Application</h1>
+
+  <div class="app-wrap">
+    
+    <!-- Navigation Bar -->
+    <nav class="topnav" role="navigation" aria-label="Main Navigation">
+      <div class="nav-logo" onclick="goScreen('empty')" style="cursor:pointer">
+        <i class="ti ti-chart-bubble" aria-hidden="true"></i> opinionX
+      </div>
+      <div class="nav-links">
+        <button class="nav-link" onclick="goScreen('empty')" aria-label="Home / Dashboard Welcome">
+          <i class="ti ti-home" aria-hidden="true"></i> Home
+        </button>
+        <button class="nav-link" id="nav-analyze" onclick="goScreen('input')" aria-label="Analyze Feedback">
+          <i class="ti ti-pencil" aria-hidden="true"></i> Analyze
+        </button>
+        <button class="nav-link" id="nav-history" onclick="goScreen('history')" aria-label="View Analysis History Logs">
+          <i class="ti ti-history" aria-hidden="true"></i> History
+        </button>
+      </div>
+      <div class="nav-right">
+        <button class="theme-btn" aria-label="Toggle visual color theme mode">
+          <i class="ti ti-moon" aria-hidden="true"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ── SCREEN 1: Empty state / Landing page ── -->
+    <section class="screen" id="screen-empty" aria-label="Welcome screen">
+      <div class="empty-center">
+        <div class="empty-icon-wrap"><i class="ti ti-chart-dots" aria-hidden="true"></i></div>
+        <h2>Analyze your feedback in seconds</h2>
+        <p>Paste customer comments or drag and drop a CSV file — our lightweight AI engine instantly labels each one as positive, negative, or neutral with a confidence score and reasoning.</p>
+        <div class="cta-row">
+          <button class="btn-primary" onclick="goScreen('input')">
+            <i class="ti ti-pencil" aria-hidden="true"></i> Paste comments
+          </button>
+          <button class="btn-secondary" onclick="goScreen('input')">
+            <i class="ti ti-upload" aria-hidden="true"></i> Upload CSV file
+          </button>
+        </div>
+        <div class="steps-row">
+          <div class="step-card">
+            <div class="step-num">Step 1</div>
+            <div class="step-title">Add feedback</div>
+            <div class="step-desc">Paste text directly or drop in a CSV file with your comments column.</div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">Step 2</div>
+            <div class="step-title">AI analysis</div>
+            <div class="step-desc">opinionX reads each sentence and assigns a valence sentiment.</div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">Step 3</div>
+            <div class="step-title">Export insights</div>
+            <div class="step-desc">Download parsed results as a clean CSV or correct ratings manually.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SCREEN 2: Input active ── -->
+    <section class="screen" id="screen-input" aria-label="Input screen">
+      <div class="input-layout">
+        <div>
+          <div class="panel-card">
+            <div class="panel-label"><i class="ti ti-pencil" aria-hidden="true"></i> Paste feedback comments</div>
+            <textarea id="demoTextarea" aria-label="Enter comments, one comment per line" placeholder="Enter one comment per line. Example:&#10;The product exceeded my expectations!&#10;Delivery was very slow and packaging broken.&#10;It works as described, nothing special.">The onboarding experience was smooth and intuitive.
+I've been waiting 3 weeks for a refund — terrible service.
+The app works fine, nothing really stands out.
+Absolutely love the new dashboard redesign!
+Support team took 5 days to respond to my urgent ticket.</textarea>
+            <div class="char-count" id="charCount">5 comments detected</div>
+            <div class="input-actions">
+              <button class="btn-primary" style="font-size:13px;padding:8px 18px" aria-label="Trigger Sentiment Analysis">
+                <i class="ti ti-sparkles" aria-hidden="true"></i> Run Analysis
+              </button>
+              <span class="kbd">Ctrl + Enter</span>
+              <button class="tips-toggle" onclick="toggleTips()" role="button" tabindex="0" aria-expanded="false" id="tipsToggle" aria-controls="tipsBox">
+                <i class="ti ti-info-circle" aria-hidden="true"></i> Tips
+              </button>
+            </div>
+            <div id="tipsBox" class="tips-box" style="display:none" role="note">
+              <ul>
+                <li>One comment per line achieves optimal parsing results.</li>
+                <li>Supports CSV dragging directly into the dashboard upload zone.</li>
+                <li>Processing capacity limits text inputs to 500 lines per batch.</li>
+                <li>Data privacy: All analytics run client-side. No comments are sent to remote servers.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel-card" style="margin-bottom:16px">
+            <div class="panel-label"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i> Upload CSV file</div>
+            <div class="drop-zone" role="button" tabindex="0" aria-label="Drag CSV file here or click to browse files">
+              <i class="ti ti-cloud-upload" aria-hidden="true"></i>
+              <span class="drop-label">Drop CSV here or click to browse</span>
+              <span style="font-size:11px;color:var(--color-text-secondary)">Comma-separated · UTF-8 · max 10 MB</span>
+            </div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-label"><i class="ti ti-keyboard" aria-hidden="true"></i> Keyboard shortcuts</div>
+            <div class="shortcuts-list">
+              <div class="shortcut-row"><span>Trigger Analysis</span><span class="kbd">Ctrl + Enter</span></div>
+              <div class="shortcut-row"><span>Export CSV Results</span><span class="kbd">Ctrl + E</span></div>
+              <div class="shortcut-row"><span>Clear Inputs</span><span class="kbd">Ctrl + ⌫</span></div>
+              <div class="shortcut-row"><span>New Analysis</span><span class="kbd">Ctrl + N</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SCREEN 3: Processing loader ── -->
+    <section class="screen" id="screen-processing" aria-label="Processing screen" aria-live="polite">
+      <div class="process-center">
+        <div class="stepper" role="list" aria-label="Sentiment analysis parsing progress steps">
+          <div class="step-item done" role="listitem">
+            <div class="step-circle done" aria-label="Reading complete"><i class="ti ti-check" aria-hidden="true"></i></div>
+            <div class="step-lbl done">Reading</div>
+          </div>
+          <div class="step-item done" role="listitem">
+            <div class="step-circle done" aria-label="Parsing complete"><i class="ti ti-check" aria-hidden="true"></i></div>
+            <div class="step-lbl done">Parsing</div>
+          </div>
+          <div class="step-item" id="step-analyzing" role="listitem">
+            <div class="step-circle active" aria-label="Analysis in progress"><i class="ti ti-loader-2" aria-hidden="true"></i></div>
+            <div class="step-lbl active">Analyzing</div>
+          </div>
+          <div class="step-item" id="step-done" role="listitem">
+            <div class="step-circle" aria-label="Awaiting completion"><i class="ti ti-sparkles" aria-hidden="true"></i></div>
+            <div class="step-lbl">Done</div>
+          </div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progBar" style="width:0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          <div class="progress-meta">
+            <span id="progLabel">Preparing comments...</span>
+            <span id="progEta">~4s remaining</span>
+          </div>
+        </div>
+        <p class="process-detail" id="processDetail">opinionX NLP lexer is assessing valence polarity and parsing contexts...</p>
+        <button class="btn-cancel" onclick="goScreen('input')" aria-label="Cancel analysis and return to input screen">Cancel</button>
+      </div>
+    </section>
+
+    <!-- ── SCREEN 4: Results Dashboard ── -->
+    <section class="screen" id="screen-results" aria-label="Results dashboard">
+      <div class="results-header">
+        <h2><i class="ti ti-chart-bar" aria-hidden="true" style="font-size:16px;vertical-align:-2px;margin-right:6px"></i>Results — Batch</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn-outline" onclick="exportResultsToCSV()" aria-label="Export results to a CSV file">
+            <i class="ti ti-download" aria-hidden="true"></i> Export CSV
+          </button>
+          <button class="btn-outline" onclick="goScreen('input')" aria-label="Start new sentiment analysis">
+            <i class="ti ti-plus" aria-hidden="true"></i> New analysis
+          </button>
+        </div>
+      </div>
+
+      <!-- Metrics Cards -->
+      <div class="metrics-grid" role="region" aria-label="Summary metrics">
+        <div class="metric-card">
+          <div class="metric-label"><i class="ti ti-messages" aria-hidden="true" style="font-size:13px"></i> Total Comments</div>
+          <div class="metric-val" id="m-total">0</div>
+          <div class="metric-trend trend-neu">this run</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><i class="ti ti-mood-happy" aria-hidden="true" style="font-size:13px"></i> Positive</div>
+          <div class="metric-val trend-up" id="m-pos">0</div>
+          <div class="metric-trend trend-up" id="m-pos-pct">0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><i class="ti ti-mood-sad" aria-hidden="true" style="font-size:13px"></i> Negative</div>
+          <div class="metric-val trend-dn" id="m-neg">0</div>
+          <div class="metric-trend trend-dn" id="m-neg-pct">0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><i class="ti ti-mood-neutral" aria-hidden="true" style="font-size:13px"></i> Neutral</div>
+          <div class="metric-val trend-neu" id="m-neu">0</div>
+          <div class="metric-trend trend-neu" id="m-neu-pct">0%</div>
+        </div>
+      </div>
+
+      <!-- Charts Layout -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Sentiment Polarity Share</div>
+          <div class="chart-legend" role="presentation">
+            <span class="legend-item"><span class="legend-dot" style="background:#1D9E75"></span>Positive</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#D85A30"></span>Negative</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#888780"></span>Neutral</span>
+          </div>
+          <div style="position:relative;height:180px">
+            <canvas id="donutChart" role="img" aria-label="Doughnut chart reflecting sentiment polarity shares"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Confidence Distribution Score</div>
+          <div style="position:relative;height:208px">
+            <canvas id="confChart" role="img" aria-label="Bar chart showing analysis confidence ranges"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table controls search and filter -->
+      <div class="table-controls">
+        <div class="search-wrap">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input type="search" id="searchInput" placeholder="Search comments or reasons..." aria-label="Search comments" oninput="filterTable()">
+        </div>
+        <select class="filter-select" id="filterSel" onchange="filterTable()" aria-label="Filter comments by sentiment polarity">
+          <option value="">All Polarity Classes</option>
+          <option value="Positive">Positive Sentiment</option>
+          <option value="Negative">Negative Sentiment</option>
+          <option value="Neutral">Neutral Sentiment</option>
+        </select>
+      </div>
+
+      <!-- Table of parsed data -->
+      <div class="tbl-wrap" role="region" aria-label="Comments results table list">
+        <table aria-label="Sentiment analysis results records">
+          <thead>
+            <tr>
+              <th style="width:48px">#</th>
+              <th style="width:40%">Comment</th>
+              <th style="width:130px">Sentiment</th>
+              <th style="width:140px">Confidence</th>
+              <th>Lexicon reasoning</th>
+              <th style="width:48px" aria-label="Actions"></th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── SCREEN 5: Comment detail drawer/screen ── -->
+    <section class="screen" id="screen-detail" aria-label="Comment analysis detail view">
+      <div class="detail-back" onclick="goScreen('results')" role="button" tabindex="0" aria-label="Go back to dashboard results page">
+        <i class="ti ti-arrow-left" aria-hidden="true"></i> Back to dashboard
+      </div>
+      <div class="detail-card">
+        <div class="detail-top">
+          <div class="detail-comment" id="detail-comment">Processing comments...</div>
+          <button class="flag-btn" aria-label="Flag this comment for manual review QA"><i class="ti ti-flag" aria-hidden="true"></i> Flag</button>
+        </div>
+        <div class="detail-meta">
+          <div class="meta-item">
+            <div class="meta-label">Sentiment Polarity</div>
+            <div class="meta-val" id="detail-sentiment">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Confidence Rating</div>
+            <div class="meta-val" id="detail-conf">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Record Index</div>
+            <div class="meta-val" id="detail-idx">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Batch Group</div>
+            <div class="meta-val">AI Parser Run</div>
+          </div>
+        </div>
+        
+        <div class="detail-reason" id="detail-reason">—</div>
+
+        <!-- Corrective Override UI Control -->
+        <div class="override-container" id="override-actions"></div>
+      </div>
+    </section>
+
+    <!-- ── SCREEN 6: History logs screen ── -->
+    <section class="screen" id="screen-history" aria-label="History runs logs archive">
+      <div class="history-header">
+        <h2 style="font-size:18px;font-weight:700;font-family:var(--font-title);flex-shrink:0">History runs</h2>
+        <input class="history-search" type="search" placeholder="Search past batch runs..." aria-label="Search history logs" oninput="filterHistory(this.value)">
+        <select class="filter-select" aria-label="Filter batches by timeframe date"><option>All historical periods</option><option>This week</option><option>This month</option></select>
+      </div>
+      <div id="historyList"></div>
+    </section>
+
+    <!-- Toast Notification Banner -->
+    <div class="toast" id="toast" role="alert" aria-live="assertive">
+      <i class="ti ti-circle-check toast-icon" aria-hidden="true" style="color:var(--color-success)"></i>
+      <span>Results successfully processed.</span>
+    </div>
+
+  </div>
+
+  <!-- Chart.js and logic binding scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script src="sentiment.js"></script>
+  <script src="app.js"></script>
+  
+  <script>
+    // Extra helper tips toggle
+    function toggleTips() {
+      const box = document.getElementById('tipsBox');
+      const toggle = document.getElementById('tipsToggle');
+      const show = box.style.display === 'none';
+      box.style.display = show ? 'block' : 'none';
+      toggle.setAttribute('aria-expanded', show);
+    }
+  </script>
+</body>
+</html>
